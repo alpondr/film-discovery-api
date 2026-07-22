@@ -1,0 +1,25 @@
+# Environment
+.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+env/
+*.egg-info/
+.pytest_cache/
+
+# Editor / OS
+.DS_Store
+.vscode/
+.idea/
+
+# AI assistant configs / logs - never commit these
+.claude/
+.antigravity/
+CLAUDE.md
+
+# Local db data if using bind mounts
+pgdata/

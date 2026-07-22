@@ -1,0 +1,26 @@
+fastapi
+uvicorn[standard]
+
+# database
+sqlalchemy
+psycopg2-binary
+pgvector
+alembic
+
+# validation / settings
+pydantic
+pydantic-settings
+
+# auth
+python-jose[cryptography]
+passlib[bcrypt]
+bcrypt==4.0.1
+
+# env
+python-dotenv
+python-multipart
+
+# external apis / rag
+httpx
+groq
+sentence-transformers
