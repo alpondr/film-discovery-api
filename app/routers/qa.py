@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.core.security import get_current_user
@@ -7,7 +7,12 @@ from app.models.movie import Movie
 from app.models.search_log import SearchLog
 from app.models.user import User
 from app.schemas.movie import MovieOut
-from app.schemas.qa import QuestionRequest, QuestionResponse
+from app.schemas.qa import (
+    DirectorStyleRequest,
+    DirectorStyleResponse,
+    QuestionRequest,
+    QuestionResponse,
+)
 from app.services import groq_service
 from app.services.embedding import embed_text
 
@@ -54,3 +59,41 @@ def ask_question(
     db.commit()
 
     return QuestionResponse(answer=answer, sources=[MovieOut.model_validate(m) for m in movies])
+
+
+@router.post("/director-style", response_model=DirectorStyleResponse)
+def director_style(
+    request: DirectorStyleRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    movies = db.query(Movie).filter(Movie.director.ilike(request.director)).all()
+
+    if not movies:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"No movies found for director '{request.director}' - ingest their movies first",
+        )
+
+    system_prompt = (
+        "You are a film critic. Based ONLY on the movies listed below, describe this "
+        "director's stylistic signature - recurring themes, tone, and narrative techniques. "
+        "Be specific and reference the movies where relevant.\n\n"
+        f"Movies:\n{_build_context(movies)}"
+    )
+    style_summary = groq_service.generate(
+        system_prompt, f"Describe {request.director}'s directing style."
+    )
+
+    db.add(SearchLog(
+        user_id=current_user.id,
+        query=f"director style: {request.director}",
+        response=style_summary,
+    ))
+    db.commit()
+
+    return DirectorStyleResponse(
+        director=request.director,
+        style_summary=style_summary,
+        movies_analyzed=[MovieOut.model_validate(m) for m in movies],
+    )

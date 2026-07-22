@@ -11,3 +11,13 @@ class QuestionRequest(BaseModel):
 class QuestionResponse(BaseModel):
     answer: str
     sources: list[MovieOut]
+
+
+class DirectorStyleRequest(BaseModel):
+    director: str
+
+
+class DirectorStyleResponse(BaseModel):
+    director: str
+    style_summary: str
+    movies_analyzed: list[MovieOut]
