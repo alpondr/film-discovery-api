@@ -1,11 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.core.security import get_current_admin_user
+from app.core.security import get_current_admin_user, get_current_user
 from app.database.session import get_db
 from app.models.movie import Movie
+from app.models.search_log import SearchLog
 from app.models.user import User
-from app.schemas.movie import IngestRequest, MovieOut
+from app.schemas.movie import IngestRequest, MovieOut, SearchQuery, SearchResult
 from app.services import tmdb
 from app.services.embedding import embed_text
 
@@ -41,3 +42,34 @@ def ingest_movies_by_director(
         db.refresh(movie)
 
     return saved_movies
+
+
+@router.post("/search", response_model=list[SearchResult])
+def semantic_search(
+    request: SearchQuery,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    query_embedding = embed_text(request.query)
+
+    # cosine_distance ranges 0 (identical) - 2 (opposite); similarity = 1 - distance
+    rows = (
+        db.query(Movie, Movie.embedding.cosine_distance(query_embedding).label("distance"))
+        .order_by("distance")
+        .limit(request.limit)
+        .all()
+    )
+
+    results = [
+        SearchResult(movie=MovieOut.model_validate(movie), similarity=round(1 - distance, 4))
+        for movie, distance in rows
+    ]
+
+    db.add(SearchLog(
+        user_id=current_user.id,
+        query=request.query,
+        response=", ".join(r.movie.title for r in results),
+    ))
+    db.commit()
+
+    return results

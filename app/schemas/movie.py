@@ -20,3 +20,13 @@ class MovieOut(BaseModel):
 class IngestRequest(BaseModel):
     director: str
     limit: int = 10
+
+
+class SearchQuery(BaseModel):
+    query: str
+    limit: int = 5
+
+
+class SearchResult(BaseModel):
+    movie: MovieOut
+    similarity: float
