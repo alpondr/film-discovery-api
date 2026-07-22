@@ -15,3 +15,8 @@ class MovieOut(BaseModel):
 
     # embedding is intentionally excluded - internal detail, never exposed via API
     model_config = ConfigDict(from_attributes=True)
+
+
+class IngestRequest(BaseModel):
+    director: str
+    limit: int = 10
