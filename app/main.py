@@ -1,12 +1,13 @@
 from fastapi import FastAPI
 
-from app.routers import auth, movies, qa
+from app.routers import auth, history, movies, qa
 
 app = FastAPI(title="Film Discovery API")
 
 app.include_router(auth.router)
 app.include_router(movies.router)
 app.include_router(qa.router)
+app.include_router(history.router)
 
 
 @app.get("/health")

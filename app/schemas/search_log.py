@@ -10,3 +10,11 @@ class SearchLogOut(BaseModel):
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class PaginatedSearchLogs(BaseModel):
+    items: list[SearchLogOut]
+    total: int
+    page: int
+    size: int
+    pages: int
