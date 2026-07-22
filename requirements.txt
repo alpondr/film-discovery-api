@@ -10,6 +10,7 @@ alembic
 # validation / settings
 pydantic
 pydantic-settings
+email-validator
 
 # auth
 python-jose[cryptography]
