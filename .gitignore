@@ -11,15 +11,8 @@ env/
 *.egg-info/
 .pytest_cache/
 
-# Editor / OS
+# OS
 .DS_Store
-.vscode/
-.idea/
-
-# AI assistant configs / logs - never commit these
-.claude/
-.antigravity/
-CLAUDE.md
 
 # Local db data if using bind mounts
 pgdata/
